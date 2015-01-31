@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+
+  "name": "Mandarinvids.com extension",
+  "description": "This extension allows anyone to submit content to mandarinvids.com",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html",
+    "default_title": "click to submit video in current page"
+  },
+  "permissions": [
+    "activeTab",
+    "https://docs.google.com/"
+  ]
+}
