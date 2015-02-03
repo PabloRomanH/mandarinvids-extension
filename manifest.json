@@ -12,6 +12,7 @@
   },
   "permissions": [
     "activeTab",
-    "https://docs.google.com/"
+    "https://docs.google.com/",
+    "http://www.iqiyi.com/"
   ]
 }
