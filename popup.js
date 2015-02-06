@@ -13,7 +13,10 @@ var matchers = [
 	matchIqiyi,
 	match56,
 	matchLetv,
-	matchQq
+	matchQq,
+	matchYouku,
+	matchSina,
+	matchTudou
 ];
 
 function processtab(tabs) {
@@ -31,13 +34,11 @@ function matchCallback(match) {
 	if (match === null) {
 		console.log('domain not matched');
 		message.innerHTML = 'Invalid domain. Can only submit videos of the following websites: youtube, iqiyi, youku, tudou, 56, letv, sohu, qq, sina';
-		return;
-	}
-	if (match.error) {
+	} else if (match.error) {
 		message.innerHTML = 'Matched domain, but couldn\'t add video. ' + match.error.message;
+	} else {
+		postToForm(match);
 	}
-
-	postToForm(match);
 }
 
 function matchCaller(url, callbackArray, done) {
@@ -71,21 +72,33 @@ function postToForm(match) {
 
 	xmlhttp.onreadystatechange = function() {
 		if (xmlhttp.readyState == XMLHttpRequest.DONE ) {
-			if (xmlhttp.status == 200){
-				message.innerHTML = 'Video sent successfully!';
-			}
-			else if (xmlhttp.status == 400) {
-				message.innerHTML = 'There was an error 400. Please contact us.';
-			}
-			else {
-				message.innerHTML = 'Error code ' + xmlhttp.status + ' when submitting entry. Are you in China?';
+			if (xmlhttp.status == 200) {
+				var list = xmlhttp.responseXML.getElementsByClassName("error-message");
+
+				if (list.length > 0) {
+					message.innerHTML = 'Error submitting form! This is probably a bug. Please contact us.'
+				} else {
+					message.innerHTML = 'Video sent successfully!';
+				}
+			} else if (xmlhttp.status == 0) {
+				message.innerHTML = 'Network error ' + xmlhttp.readyState + ' when submitting entry. Are you in China?';
+			} else {
+				message.innerHTML = 'There was an error ' + xmlhttp.status + '. Please contact us.';
 			}
 		}
 	}
 
+	// var formData = new FormData();
+	//
+	// formData.append(SOURCE_ENTRY, match.source);
+	// formData.append(VIDEOID_ENTRY, encodeURIComponent(match.videoId));
+
 	xmlhttp.open('POST', 'https://docs.google.com/forms/d/' + FORM_ID + '/formResponse');
 	xmlhttp.setRequestHeader('Content-type','application/x-www-form-urlencoded');
-	xmlhttp.send(SOURCE_ENTRY + '=' + match.source + '&' + VIDEOID_ENTRY + '=' + match.videoId);
+	//xmlhttp.setRequestHeader('Content-type','multipart/form-data');
+	xmlhttp.responseType = "document";
+	// xmlhttp.send(formData);
+	xmlhttp.send(SOURCE_ENTRY + '=' + match.source + '&' + VIDEOID_ENTRY + '=' + encodeURIComponent(match.videoId));
 }
 
 document.addEventListener('DOMContentLoaded', onPopupShow);

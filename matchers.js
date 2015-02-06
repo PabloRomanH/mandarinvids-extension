@@ -1,13 +1,63 @@
-function matchYoutube(url, done) {
-    var re = /youtube\.com.*\Wv(?:=|\/)([\w\-]*)/;
+function genericMatcher(source, re, url) {
     var match = re.exec(url);
-    var videoId;
 
     if (match === null) {
-        done(null);
+        return null;
     } else {
-        done({ source: 'youtube', videoId: match[1] });
+        return { source: source, videoId: match[1] };
     }
+}
+
+function matchYoutube(url, done) {
+    done(genericMatcher('youtube', /youtube\.com.*\Wv(?:=|\/)([\w\-]+)/, url));
+}
+
+function match56(url, done) {
+    done(genericMatcher('56', /56\.com\/u\d+\/v_([\w_]+)\.html/, url));
+}
+
+function matchLetv(url, done) {
+    done(genericMatcher('letv', /letv\.com\/ptv\/vplay\/([\d]+)\.html/, url));
+}
+
+function matchQq(url, done) {
+    done(genericMatcher('qq', /v\.qq\.com\/.*\?vid=([\w]+)/, url));
+}
+
+function matchYouku(url, done) {
+    done(genericMatcher('youku', /youku\.com\/v_show\/id_([\w\d]+)\.html/, url));
+}
+
+function matchTudou(url, done) {
+    var match = genericMatcher('tudou', /tudou\.com\/programs\/view\/([\w\-_]+)\//, url);
+
+    if (match) {
+        match.videoId = 'type=0&code=' + videoId.videoId;
+        done(match);
+        return;
+    }
+
+    match = /tudou\.com\/listplay\/([\w\-_]+)\/([\w\-_]+).html/.exec(url);
+
+    if (match) {
+        done({
+            source: 'tudou',
+            videoId: 'type=1&code=' + match[2] + '&lcode=' + match[1]
+        });
+        return;
+    }
+
+    match = /tudou\.com\/albumplay\/([\w\-_]+)\/([\w\-_]+).html/.exec(url);
+
+    if (match) {
+        done({
+            source: 'tudou',
+            videoId: 'type=2&code=' + match[2] + '&lcode=' + match[1]
+        });
+        return;
+    }
+    
+    done(null);
 }
 
 function matchIqiyi(url, done) {
@@ -50,38 +100,50 @@ function matchIqiyi(url, done) {
     xmlhttp.send();
 }
 
-function match56(url, done) {
-    var re = /56\.com\/u\d+\/v_([\w_]*)\.html/;
-    var match = re.exec(url);
-    var videoId;
-
-    if (match === null) {
+function matchSina(url, done) {
+    if (url.indexOf("sina.com.cn") == -1) {
         done(null);
-    } else {
-        done({ source: '56', videoId: match[1] });
+        return;
     }
-}
 
-function matchLetv(url, done) {
-    var re = /letv\.com\/ptv\/vplay\/([\d]*)\.html/;
-    var match = re.exec(url);
-    var videoId;
-
-    if (match === null) {
-        done(null);
-    } else {
-        done({ source: 'letv', videoId: match[1] });
+    if (url.indexOf("video.sina.com.cn") == -1) {
+        done({ error: { message: 'Error: Only videos in video.sina.com.cn can be submitted.' }});
+        return;
     }
-}
 
-function matchQq(url, done) {
-    var re = /v\.qq\.com\/.*\?vid=([\w]*)/;
-    var match = re.exec(url);
-    var videoId;
+    var xmlhttp = new XMLHttpRequest();
 
-    if (match === null) {
-        done(null);
-    } else {
-        done({ source: 'qq', videoId: match[1] });
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == XMLHttpRequest.DONE ) {
+            if (xmlhttp.status == 200) {
+
+                var videoId;
+                var list = xmlhttp.responseXML.getElementsByTagName("script");
+
+                for(var i = 0; i < list.length; i++) {
+                    var match = /videoId:'(\d+)'/.exec(list[2].innerHTML);
+                    if(match) {
+                        videoId = match[1];
+                        break;
+                    }
+                }
+
+                if(!videoId) {
+                    done({ error: { message: 'Error: Sina changed their website. Please notify us.' }});
+                }
+
+                done({ source: 'sina', videoId: videoId });
+                return;
+            }
+            else {
+                done({ error: { message: 'Error: Failed to download necessary data from sina.' }});
+                return;
+            }
+        }
     }
+
+    xmlhttp.open('GET', url);
+    xmlhttp.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+    xmlhttp.responseType = "document";
+    xmlhttp.send();
 }

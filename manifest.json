@@ -13,6 +13,7 @@
   "permissions": [
     "activeTab",
     "https://docs.google.com/",
-    "http://www.iqiyi.com/"
+    "http://www.iqiyi.com/",
+    "http://video.sina.com.cn/"
   ]
 }
