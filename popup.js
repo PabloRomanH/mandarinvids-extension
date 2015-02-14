@@ -14,9 +14,11 @@ var matchers = [
 	match56,
 	matchLetv,
 	matchQq,
+	matchQq2,
 	matchYouku,
 	matchSina,
-	matchTudou
+	matchTudou,
+	matchSohu
 ];
 
 function processtab(tabs) {
@@ -78,12 +80,12 @@ function postToForm(match) {
 				if (list.length > 0) {
 					message.innerHTML = 'Error submitting form! This is probably a bug. Please contact us.'
 				} else {
-					message.innerHTML = 'Video sent successfully!';
+					message.innerHTML = 'Video successfully sent!';
 				}
-			} else if (xmlhttp.status == 0) {
-				message.innerHTML = 'Network error ' + xmlhttp.readyState + ' when submitting entry. Are you in China?';
+			} else if (xmlhttp.status == 0 && xmlhttp.readyState == 4) {
+				message.innerHTML = 'Strange network error ' + xmlhttp.readyState + ' when submitting entry. Are you behind a firewall?';
 			} else {
-				message.innerHTML = 'There was an error ' + xmlhttp.status + '. Please contact us.';
+				message.innerHTML = 'Error ' + xmlhttp.status + ':' + xmlhttp.readyState + ' when submitting entry. Please contact us.';
 			}
 		}
 	}

@@ -24,6 +24,10 @@ function matchQq(url, done) {
     done(genericMatcher('qq', /v\.qq\.com\/.*\?vid=([\w]+)/, url));
 }
 
+function matchQq2(url, done) {
+    done(genericMatcher('qq', /v\.qq\.com\/.*\/([\w]+)\.html/, url));
+}
+
 function matchYouku(url, done) {
     done(genericMatcher('youku', /youku\.com\/v_show\/id_([\w\d]+)\.html/, url));
 }
@@ -32,7 +36,7 @@ function matchTudou(url, done) {
     var match = genericMatcher('tudou', /tudou\.com\/programs\/view\/([\w\-_]+)\//, url);
 
     if (match) {
-        match.videoId = 'type=0&code=' + videoId.videoId;
+        match.videoId = 'type=0&code=' + match.videoId;
         done(match);
         return;
     }
@@ -56,8 +60,59 @@ function matchTudou(url, done) {
         });
         return;
     }
-    
+
     done(null);
+}
+
+function matchSohu(url, done) {
+    if (url.indexOf("sohu.com") == -1) {
+        done(null);
+        return;
+    }
+
+    var match = genericMatcher('mysohu', /my\.tv\.sohu\.com\/us\/\d+\/(\d+)\.shtml/, url);
+    console.log('matched mysohu');
+    console.log(match);
+    if(match !== null) {
+        done(match);
+        return;
+    }
+
+    var xmlhttp = new XMLHttpRequest();
+
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == XMLHttpRequest.DONE ) {
+            if (xmlhttp.status == 200) {
+                var vid, plid;
+                var list = xmlhttp.responseXML.getElementsByTagName("script");
+
+                for(var i = 0; i < list.length; i++) {
+                    var match1 = /var vid="(\d+)"/.exec(list[i].innerHTML);
+                    var match2 = /var playlistId="(\d+)"/.exec(list[i].innerHTML);
+                    if(match1 && match2) {
+                        vid = match1[1];
+                        plid = match2[1];
+                        break;
+                    }
+                }
+
+                if(!vid) {
+                    done({ error: { message: 'Error: Sohu changed their website. Please notify us.' }});
+                }
+
+                done({ source: 'sohu', videoId: vid + '/v.swf&plid=' + plid });
+                return;
+            } else {
+                done({ error: { message: 'Error ' + xmlhttp.status + ': Failed to download necessary data from Sohu.' }});
+                return;
+            }
+        }
+    }
+
+    xmlhttp.open('GET', url);
+    xmlhttp.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+    xmlhttp.responseType = "document";
+    xmlhttp.send();
 }
 
 function matchIqiyi(url, done) {
@@ -121,7 +176,7 @@ function matchSina(url, done) {
                 var list = xmlhttp.responseXML.getElementsByTagName("script");
 
                 for(var i = 0; i < list.length; i++) {
-                    var match = /videoId:'(\d+)'/.exec(list[2].innerHTML);
+                    var match = /videoId:'(\d+)'/.exec(list[i].innerHTML);
                     if(match) {
                         videoId = match[1];
                         break;
