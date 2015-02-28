@@ -12,8 +12,16 @@ function matchYoutube(url, done) {
     done(genericMatcher('youtube', /youtube\.com.*\Wv(?:=|\/)([\w\-]+)/, url));
 }
 
+function matchYoutubePlaylist(url, done) {
+    done(genericMatcher('youtubePlaylist', /youtube\.com\/playlist\?.*list=([\w\-]+)/, url));
+}
+
+function matchYoutubeChannel(url, done) {
+    done(genericMatcher('youtubeChannel', /youtube\.com\/(?:user|channel)\/([^\?]+)/, url));
+}
+
 function match56(url, done) {
-    done(genericMatcher('56', /56\.com\/u\d+\/v_([\w_]+)\.html/, url));
+    done(genericMatcher('56', /56\.com\/u\d+\/v_([\w]+)\.html/, url));
 }
 
 function matchLetv(url, done) {
@@ -29,11 +37,15 @@ function matchQq2(url, done) {
 }
 
 function matchYouku(url, done) {
-    done(genericMatcher('youku', /youku\.com\/v_show\/id_([\w\d]+)\.html/, url));
+    done(genericMatcher('youku', /youku\.com\/v_show\/id_([\w]+)\.html/, url));
+}
+
+function match17173(url, done) {
+    done(genericMatcher('17173', /v\.17173\.com\/.*\/([\w]+)\.html/, url));
 }
 
 function matchTudou(url, done) {
-    var match = genericMatcher('tudou', /tudou\.com\/programs\/view\/([\w\-_]+)\//, url);
+    var match = genericMatcher('tudou', /tudou\.com\/programs\/view\/([\w\-]+)/, url);
 
     if (match) {
         match.videoId = 'type=0&code=' + match.videoId;

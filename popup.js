@@ -18,7 +18,10 @@ var matchers = [
 	matchYouku,
 	matchSina,
 	matchTudou,
-	matchSohu
+	matchSohu,
+	matchYoutubePlaylist,
+	matchYoutubeChannel,
+	match17173
 ];
 
 function processtab(tabs) {
@@ -90,16 +93,9 @@ function postToForm(match) {
 		}
 	}
 
-	// var formData = new FormData();
-	//
-	// formData.append(SOURCE_ENTRY, match.source);
-	// formData.append(VIDEOID_ENTRY, encodeURIComponent(match.videoId));
-
 	xmlhttp.open('POST', 'https://docs.google.com/forms/d/' + FORM_ID + '/formResponse');
 	xmlhttp.setRequestHeader('Content-type','application/x-www-form-urlencoded');
-	//xmlhttp.setRequestHeader('Content-type','multipart/form-data');
 	xmlhttp.responseType = "document";
-	// xmlhttp.send(formData);
 	xmlhttp.send(SOURCE_ENTRY + '=' + match.source + '&' + VIDEOID_ENTRY + '=' + encodeURIComponent(match.videoId));
 }
 
